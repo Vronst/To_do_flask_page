@@ -1,5 +1,5 @@
 {%macro render_form(field)%}
-{{field.label}}
+<h4>{{field.label}}</h4>
 {{field(size=32)}}
 {%for error in field.errors%}
             <p class='error'>{{error}}</p>

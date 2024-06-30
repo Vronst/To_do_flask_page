@@ -30,15 +30,17 @@ def register():
         print(name)
         # TODO: base with users to check for duplicates before registering
         return "123456"
-    else:
-        print(form.errors)
     return render_template('register.html', form=form)
 
 
-@app.route('/login')
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     # blocks logged users from logging again
+    if 'user' in session:
+        return redirect(url_for('index'))
     form = LoginForm()
+    if form.validate_on_submit():
+        return redirect(url_for('index'))
     if 'user' in session:
         return redirect(url_for('index'))
     return render_template('login.html', form=form)

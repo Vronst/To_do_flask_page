@@ -5,9 +5,9 @@ from flask_ckeditor import CKEditorField
 
 
 class LoginForm(FlaskForm):
-    email = EmailField(label='Email: ', validators=[DataRequired()])
-    password = PasswordField(label='Password: ', validators=[DataRequired()])
-    submit = SubmitField()
+    email = EmailField(label='Email: ', validators=[DataRequired(), Email("Invalid email address")])
+    password = PasswordField(label='Password: ', validators=[DataRequired(), Length(min=8, message="Incorrect password or email")])
+    submit = SubmitField("Log in")
     
 
 class RegisterForm(FlaskForm):

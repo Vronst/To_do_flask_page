@@ -7,7 +7,7 @@ Login - ToDO
     <div class="container px-4">
         <div class="row gx-4 justify-content-center">
             <div class="col-lg-8 text-center">
-                <form method='POST' action="{{url_for("register")}}" novalidate>
+                <form method='POST' action="{{url_for("login")}}" novalidate>
                     {{ form.hidden_tag() }}
                     <div>
                         {{m.render_form(form.email)}}
@@ -17,7 +17,7 @@ Login - ToDO
                     </div>
                     <br>
                         <div>
-                            {{form.submit()}}
+                            {{form.submit(class='btn btn-primary')}}
                         </div>
                     </form>
             </div>
