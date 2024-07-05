@@ -5,9 +5,8 @@ from forms import RegisterForm, LoginForm, ToDoForm
 from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy import Integer, String
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import UserMixin, login_user, LoginManager, current_user, login_required
+from flask_login import UserMixin, login_user, LoginManager, current_user, login_required, logout_user
 
 load_dotenv()
 
@@ -16,6 +15,7 @@ class Base(DeclarativeBase):
     pass
 
 
+# configuring app then implementing login manager and database
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('FLASK_KEY')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DB_URI')
@@ -32,9 +32,22 @@ def load_user(user_id):
     return db.session.get(User, user_id)
 
 
+# below are routes that user can take
+@app.route('/logout')
+@login_required
+def log_out():
+    logout_user()
+    return redirect(url_for('login'))
+
+
+@app.route('/settings/')
+def settings():
+    return 'To be implemented'
+
+
 @app.route('/')
 def index():
-    return render_template('index.html', text="You need to be logged in to acces ToDO list!", home=True)
+    return render_template('index.html', text="You need to be logged in to acces ToDO list!", home=True, logged=current_user.is_authenticated)
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -61,10 +74,21 @@ def login():
     # blocks logged users from logging again
     form = LoginForm()
     if form.validate_on_submit():
-        return redirect(url_for('index'))
+        user = db.session.execute(db.select(User).filter_by(email=form.email.data)).scalar()
+        print(user)
+        try:
+            if check_password_hash(user.password, form.password.data):
+                login_user(user, remember=form.remember.data)
+                return redirect(url_for('index'))
+            else:
+                flash('Wrong password or email')
+        except AttributeError:
+            flash('Wrong password or email')
+
     return render_template('login.html', form=form, login=True)
 
 
+# class for users that stores their data in database
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -72,11 +96,9 @@ class User(UserMixin, db.Model):
     email =  db.Column(db.String(50), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
     
-    # def __repr__(self) -> str:
-    #     return f'{type(self).__name__}(id={self.id},' +\
-    #                 f'name={self.username}, email={self.email})'
-
-
+    def __repr__(self) -> str:
+        atributes = list(self.__dict__.items())[1:]
+        return f'{type(self).__name__}(' + ', '.join(f'{k}={v}' for k, v in atributes) + ')'
 
 
 if __name__ == '__main__':

@@ -3,7 +3,17 @@
 {%block title%}
 List - ToDO
 {%endblock%}
-{%block body%}        
+{%block body%}
+    <!-- Header-->
+    {%if text and not logged%}
+    <header class="bg-primary bg-gradient text-white">
+        <div class="container px-4 text-center">
+            <h1 class="fw-bolder">{{text}}</h1>
+            <p class="lead">Log in or create new account, it will take no time!</p>
+            <a class="btn btn-lg btn-light" href="{{url_for('login')}}">Log in</a>
+            <a class="btn btn-lg btn-light" href="{{url_for('register')}}">Register</a>
+        </div>
+    </header>      
 <section>
     <div class="container px-4">
         <div class="row gx-4 justify-content-center">
@@ -32,5 +42,6 @@ List - ToDO
         </div>
     </div>
 </section>
+{%endif%}  
 {%endblock%}
 

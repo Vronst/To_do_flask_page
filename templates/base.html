@@ -34,22 +34,14 @@
                     {%if not login%}
                     <li class="nav-item"><a class="nav-link" href="{{url_for("login")}}">Login</a></li>
                     {%endif%}
+                    {%else%}
+                    <li class="nav-item"><a class="nav-link" href="{{url_for("settings")}}">Settings</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{url_for("log_out")}}">Log out</a></li>
                     {%endif%}
                 </ul>
             </div>
         </div>
     </nav>
-    <!-- Header-->
-     {%if text%}
-    <header class="bg-primary bg-gradient text-white">
-        <div class="container px-4 text-center">
-            <h1 class="fw-bolder">{{text}}</h1>
-            <p class="lead">Log in or create new account, it will take no time!</p>
-            <a class="btn btn-lg btn-light" href="{{url_for('login')}}">Log in</a>
-            <a class="btn btn-lg btn-light" href="{{url_for('register')}}">Register</a>
-        </div>
-    </header>
-    {%endif%}
 {%block body%}
 {%endblock%}
         <!-- Footer-->

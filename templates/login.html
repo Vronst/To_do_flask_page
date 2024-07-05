@@ -11,12 +11,22 @@ Login - ToDO
                     {{ form.hidden_tag() }}
                     <div>
                         {{m.render_form(form.email)}}
+                        {% with messages = get_flashed_messages() %}
+                        {% for message in messages %}
+                        <p style="color: red;">{{ message }}</p>
+                        {% endfor %}
+                    {% endwith %}  
                     </div>
                     <div>
                         {{m.render_form(form.password)}}
                     </div>
                     <br>
                         <div>
+                            {{m.render_form(form.remember)}}
+                        </div>
+                        <br>
+                        <div>
+                            
                             {{form.submit(class='btn btn-primary')}}
                         </div>
                     </form>

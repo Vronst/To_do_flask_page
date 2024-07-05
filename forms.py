@@ -1,4 +1,4 @@
-from wtforms import StringField, SubmitField, EmailField, PasswordField
+from wtforms import StringField, SubmitField, EmailField, PasswordField, BooleanField
 from wtforms.validators import DataRequired, Email, Length
 from flask_wtf import FlaskForm
 from flask_ckeditor import CKEditorField
@@ -7,6 +7,7 @@ from flask_ckeditor import CKEditorField
 class LoginForm(FlaskForm):
     email = EmailField(label='Email: ', validators=[DataRequired(), Email("Invalid email address")])
     password = PasswordField(label='Password: ', validators=[DataRequired(), Length(min=8, message="Incorrect password or email")])
+    remember = BooleanField(label='Remember me')
     submit = SubmitField("Log in")
     
 
