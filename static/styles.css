@@ -10,6 +10,25 @@
  * Copyright 2011-2022 Twitter, Inc.
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE)
  */
+ .importance1{
+  background-color: greenyellow;
+ }
+ .importance2{
+  border-radius: 30px;
+  background-color: yellow;
+ }
+ .importance3{
+  background-color: var(--bs-red);
+ }
+ .task{
+  /* border: #000, solid, 1px; */
+  padding: 10px;
+ }
+ .task-title{
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+ }
  .error{
   color: red;
   font-weight: bold;

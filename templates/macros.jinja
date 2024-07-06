@@ -1,8 +1,17 @@
-{%macro render_form(field)%}
+{%macro render_form(field, subfields=False)%}
+{%if subfields%}
+{%for subfield in field%}
+<tr class="col-lg-4">
+    <td>{{ subfield }}</td>
+    <td>{{ subfield.label }}</td>
+</tr>
+
+{%endfor%}
+{%else%}
 <h4>{{field.label}}</h4>
 {{field(size=32)}}
 {%for error in field.errors%}
             <p class='error'>{{error}}</p>
             {%endfor%}
-
+{%endif%}
 {%endmacro%}

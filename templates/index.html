@@ -5,10 +5,10 @@ List - ToDO
 {%endblock%}
 {%block body%}
     <!-- Header-->
-    {%if text and not logged%}
+    {%if not logged%}
     <header class="bg-primary bg-gradient text-white">
         <div class="container px-4 text-center">
-            <h1 class="fw-bolder">{{text}}</h1>
+            <h1 class="fw-bolder">You need to be logged in to acces ToDO list!</h1>
             <p class="lead">Log in or create new account, it will take no time!</p>
             <a class="btn btn-lg btn-light" href="{{url_for('login')}}">Log in</a>
             <a class="btn btn-lg btn-light" href="{{url_for('register')}}">Register</a>
@@ -42,6 +42,34 @@ List - ToDO
         </div>
     </div>
 </section>
+{%else%}
+<header class="bg-primary bg-gradient text-white">
+    <div class="container px-4 text-center">
+        <h1 class="fw-bolder">Welcome {{user.username}}!</h1>
+        <p class="lead">Here are your tasks!</p>
+        <a class="btn btn-lg btn-light" href="{{url_for('add_task')}}">New task</a>
+        <br><br>
+        <a class="btn btn-lg btn-light" href="{{url_for('index', done=True)}}">Finished Tasks</a>
+    </div>
+</header>
+<section>
+    <div class="container px-4">
+        <div class='row'>
+            {%for each in tasks%}
+            {%if each.importance == 3%}
+            <div class="col-lg-12 task importance3 mb-2 rounded">
+            {%elif each.importance == 2%}
+            <div class="col-lg-6 task importance2 mb-2">
+            {%else%}
+            <div class="col-lg-4 task importance1 mb-2 rounded-pill">
+                {%endif%}
+            <h3 class='task-title'>{{each.name}}</h3>
+            <p class='lead '>{{each.description}}</p>
+            </div>
+            {%endfor%}
+        </div>
+    </div>
+    </section> 
 {%endif%}  
 {%endblock%}
 
