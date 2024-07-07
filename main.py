@@ -1,6 +1,7 @@
 from flask import Flask, render_template, redirect, url_for, flash, request
 import smtplib
 import os
+from sqlalchemy import and_
 from forms import RegisterForm, LoginForm, ToDoForm
 from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
@@ -8,6 +9,14 @@ from sqlalchemy.orm import DeclarativeBase
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin, login_user, LoginManager, current_user, login_required, logout_user
 from flask_ckeditor import CKEditor
+from datetime import datetime
+import bleach  # used to make CKEditor more safe
+
+"""
+TODO: clicking task should mark them done and clicking done task should mark them undone
+TODO: setting for sorting and maybe selecting colors?
+TODO: deleting by user tasks from database
+"""
 
 load_dotenv()
 
@@ -55,7 +64,7 @@ def add_task():
     if form.validate_on_submit():
         task = Tasks(importance=form.importance.data, 
                 name=form.task.data, description=form.task_description.data,
-                    owner=current_user.get_id())
+                    owner=current_user.get_id(), due=form.due.data, time=str(datetime.now()).split('.')[0], done=0)
         db.session.add(task)
         db.session.commit()
         return redirect(url_for('index'))
@@ -64,14 +73,14 @@ def add_task():
 
 @app.route('/')
 def index():
-    if request.args.get('done') == 'True':
-        #TODO: add mechanic to check tasks as done and a databse to store it (with option to undone it)
-        pass
     tasks = None
-    if current_user.is_authenticated:
-        tasks = db.session.execute(db.select(Tasks)).scalars().all()
-        print(tasks)
-    return render_template('index.html', home=True, logged=current_user.is_authenticated, user=current_user, tasks=tasks)
+    done = None
+    if request.args.get('done') == 'True':
+        tasks = db.session.execute(db.select(Tasks).where(and_(Tasks.owner == current_user.get_id(), Tasks.done == 1))).scalars().all()
+        done = True
+    elif current_user.is_authenticated:
+        tasks = db.session.execute(db.select(Tasks).where(and_(Tasks.owner == current_user.get_id() and Tasks.done == 0))).scalars().all()
+    return render_template('index.html', home=True, logged=current_user.is_authenticated, user=current_user, tasks=tasks, done=done)
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -100,7 +109,6 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         user = db.session.execute(db.select(User).filter_by(email=form.email.data)).scalar()
-        print(user)
         try:
             if check_password_hash(user.password, form.password.data):
                 login_user(user, remember=form.remember.data)
@@ -134,6 +142,9 @@ class Tasks(db.Model):
     name = db.Column(db.String(50), nullable=False)
     description = db.Column(db.String(600))
     owner = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    due = db.Column(db.String(20))
+    time = db.Column(db.String(20))
+    done = db.Column(db.Integer)
 
 
 if __name__ == '__main__':

@@ -10,6 +10,10 @@
  * Copyright 2011-2022 Twitter, Inc.
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE)
  */
+ .a-task{
+  text-decoration: none;
+  color: black;
+ }
  .importance1{
   background-color: greenyellow;
  }
@@ -276,9 +280,9 @@ a {
   color: var(--bs-link-color);
   text-decoration: underline;
 }
-a:hover {
+/* a:hover {
   color: var(--bs-link-hover-color);
-}
+} */
 
 a:not([href]):not([class]), a:not([href]):not([class]):hover {
   color: inherit;

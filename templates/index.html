@@ -49,13 +49,18 @@ List - ToDO
         <p class="lead">Here are your tasks!</p>
         <a class="btn btn-lg btn-light" href="{{url_for('add_task')}}">New task</a>
         <br><br>
+        {%if not done%}
         <a class="btn btn-lg btn-light" href="{{url_for('index', done=True)}}">Finished Tasks</a>
+        {%else%}
+        <a class="btn btn-lg btn-light" href="{{url_for('index', done=False)}}">Unfinished Tasks</a>
+        {%endif%}
     </div>
 </header>
 <section>
     <div class="container px-4">
         <div class='row'>
             {%for each in tasks%}
+            <a style='' class='a-task' href='#'>
             {%if each.importance == 3%}
             <div class="col-lg-12 task importance3 mb-2 rounded">
             {%elif each.importance == 2%}
@@ -65,6 +70,7 @@ List - ToDO
                 {%endif%}
             <h3 class='task-title'>{{each.name}}</h3>
             <p class='lead '>{{each.description}}</p>
+            </a>
             </div>
             {%endfor%}
         </div>

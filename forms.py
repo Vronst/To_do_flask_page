@@ -1,4 +1,4 @@
-from wtforms import StringField, SubmitField, EmailField, PasswordField, BooleanField, RadioField
+from wtforms import DateField, StringField, SubmitField, EmailField, PasswordField, BooleanField, RadioField
 from wtforms.validators import DataRequired, Email, Length
 from flask_wtf import FlaskForm
 from flask_ckeditor import CKEditorField
@@ -24,5 +24,6 @@ class RegisterForm(FlaskForm):
 class ToDoForm(FlaskForm):
     task = StringField(label='Task name: ', validators=[DataRequired()])
     importance = RadioField(choices=[1, 2, 3])
+    due = DateField('Has to be completed due to:', format='%Y-%m-%d')
     task_description = CKEditorField(label='Description: ')   
     submit = SubmitField()
