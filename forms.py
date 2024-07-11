@@ -1,4 +1,5 @@
-from wtforms import DateField, StringField, SubmitField, EmailField, PasswordField, BooleanField, RadioField
+from wtforms import DateField, StringField, SubmitField,\
+    EmailField, PasswordField, BooleanField, RadioField, ColorField
 from wtforms.validators import DataRequired, Email, Length
 from flask_wtf import FlaskForm
 from flask_ckeditor import CKEditorField
@@ -27,3 +28,15 @@ class ToDoForm(FlaskForm):
     due = DateField('Has to be completed due to:', format='%Y-%m-%d')
     task_description = CKEditorField(label='Description: ')   
     submit = SubmitField()
+
+
+class SettingsForm(FlaskForm):
+    task1 = ColorField(label='Color for importance 1:')
+    task2 = ColorField(label='Color for importance 2:')
+    task3 = ColorField(label='Color for importance 3:')
+    submit = SubmitField('Apply')
+    
+    
+class ResetForm(FlaskForm):
+    submit = SubmitField('Reset to defaults')
+
