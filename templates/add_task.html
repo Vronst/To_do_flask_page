@@ -5,14 +5,23 @@ Adding - ToDO
 {%block body%}
 <header class="bg-primary bg-gradient text-white">
     <div class="container px-4 text-center">
-        <h1 class="fw-bolder">Create your new task below!</h1>
+        <h1 class="fw-bolder">
+            {%if not edit%}Create your new task below!
+            {%else%}
+            You are editing your task
+            {%endif%}
+        </h1>
     </div>
 </header>
 <section>
     <div class='container px-4'>
         <div class="row gx-4 justify-content-center">
             <div class="col-lg-8 text-center">
+                {%if not edit%}
                 <form method='POST' action="{{url_for("add_task")}}" novalidate>
+                {%else%}
+                <form method='POST' action="{{url_for("add_task", task_id=edit)}}" novalidate>
+                {%endif%}
                     {{ ckeditor.load() }}
                     {{form.hidden_tag()}}
                     <div>

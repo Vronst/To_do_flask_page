@@ -1,6 +1,6 @@
 from wtforms import DateField, StringField, SubmitField,\
     EmailField, PasswordField, BooleanField, RadioField, ColorField
-from wtforms.validators import DataRequired, Email, Length
+from wtforms.validators import DataRequired, Email, Length, EqualTo
 from flask_wtf import FlaskForm
 from flask_ckeditor import CKEditorField
 
@@ -19,6 +19,7 @@ class RegisterForm(FlaskForm):
                                                     Email("Invalid email address")])
     password = PasswordField(label='Password: ', validators=[DataRequired(),
                                                              Length(min=8, message="Password must be at least 8 letters long")])
+    repeat_pass = PasswordField(label='Repeat password: ', validators=[DataRequired(), EqualTo('password', message='Passwords must match!')])
     submit = SubmitField("Register")
     
 

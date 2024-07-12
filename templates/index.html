@@ -75,6 +75,10 @@ List - ToDO
                             <div class="task rounded" style='background-color: {{ colors[each.importance - 1] }}'>
                                 <h3 class='task-title'>{{ each.name }}</h3>
                                 <p class='desc'>{{ each.description }}</p>
+                                <p class='posted'>{{each.time}}</p>
+                                {%if not done%}
+                                <a href="{{ url_for('add_task', task_id=each.id) }}" class="edit-task">Edit</a>
+                                {%endif%}
                                 <a href="{{ url_for('delete_task', task_id=each.id) }}" class="delete-task">&times;</a>
                             </div>
                         </a>

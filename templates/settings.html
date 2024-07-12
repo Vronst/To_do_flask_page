@@ -5,7 +5,12 @@ Settings - ToDO
 {%block body%}
 <header class="bg-primary bg-gradient text-white">
     <div class="container px-4 text-center">
-        <h1 class="fw-bolder">Settings</h1>    
+        <h1 class="fw-bolder">Settings</h1>
+        {% with messages = get_flashed_messages() %}
+                        {% for message in messages %}
+                        <p class='lead'>{{ message }}</p>
+                        {% endfor %}
+                        {% endwith %}  
     </div>
 </header>
 <section>

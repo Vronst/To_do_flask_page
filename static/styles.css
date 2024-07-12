@@ -10,6 +10,15 @@
  * Copyright 2011-2022 Twitter, Inc.
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE)
  */
+ .posted{
+  scale: .75;
+  position: absolute;
+  top: 0px;
+  left: 2px;
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+ }
  .delete-task {
   position: absolute;
   top: 0px;
@@ -19,7 +28,16 @@
   font-size: 20px;
   cursor: pointer;
 }
-
+.edit-task{
+  scale: .75;
+  position: absolute;
+  top: 2px;
+  right: 30px;
+  color: black;
+  text-decoration: none;
+  font-size: 20px;
+  cursor: pointer;
+}
 .delete-task:hover {
   color: darkred;
 }
