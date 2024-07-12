@@ -1,18 +1,24 @@
-from flask import Flask, render_template, redirect, request, session, url_for, flash, render_template_string
-import smtplib
-from itsdangerous import URLSafeTimedSerializer 
 import os
-from sqlalchemy import and_
-from forms import RegisterForm, LoginForm, ToDoForm, SettingsForm, ResetForm
-from dotenv import load_dotenv
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import DeclarativeBase
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_login import UserMixin, login_user, LoginManager, current_user, login_required, logout_user
-from flask_ckeditor import CKEditor
+import smtplib
 from datetime import datetime
-import bleach
 
+import bleach
+from dotenv import load_dotenv
+from flask import (
+    Flask, render_template, redirect, request, session, url_for, flash, render_template_string
+)
+from flask_ckeditor import CKEditor
+from flask_login import (
+    UserMixin, login_user, LoginManager, current_user, login_required, logout_user
+)
+from flask_sqlalchemy import SQLAlchemy
+from itsdangerous import URLSafeTimedSerializer
+from sqlalchemy import and_
+from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm.exc import UnmappedInstanceError
+from werkzeug.security import generate_password_hash, check_password_hash
+
+from forms import RegisterForm, LoginForm, ToDoForm, SettingsForm, ResetForm
 
 # globals with colors for tasks with different importance
 task1 = '#adff2f'
@@ -50,6 +56,12 @@ SER = URLSafeTimedSerializer(app.config['SECRET_KEY'])
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, user_id)
+
+
+@app.errorhandler(401)
+def handle_method_not_allowed(e):
+    # Redirect to index route if user tries to access forbidden sites
+    return redirect(url_for('index'))
 
 
 # below are routes that user can take
@@ -90,6 +102,11 @@ def settings():
 
 
 def validate_task(form, task=None):
+    """
+    validates form for task - its purpose is to omit redundant lines of code in add_task().
+    it takes form and task as arguments and if task is none, adds new task else edit already exsiting (the one provided).
+    this method returns 1 or 0 so the calling funcion knows if validation was a succes (1 means success, 0 fail)
+    """
     if not task:
         if form.validate_on_submit():
             task = Tasks(importance=form.importance.data, 
@@ -115,13 +132,21 @@ def validate_task(form, task=None):
 @app.route('/edit/<int:task_id>', methods=['POST', 'GET'])
 @login_required
 def add_task(task_id=None):
+    """
+    not only allows user to add new tasks, it is also used to edit existing ones (see separate routes).
+    If task_id was provided it searches for task and edit it else adds new one
+    """
     task=None
     if not task_id:
         form = ToDoForm()
     else:
-        task=db.session.execute(db.select(Tasks).where(Tasks.id == task_id)).scalar()
-        form = ToDoForm(task=task.name, importance=task.importance,\
-            task_description=task.description, due=datetime.strptime(task.due, '%Y-%m-%d').date(), time=str(datetime.now()).split('.')[0])
+        try:
+            task=db.session.execute(db.select(Tasks).where(Tasks.id == task_id)).scalar()
+            form = ToDoForm(task=task.name, importance=task.importance,\
+                task_description=task.description, due=datetime.strptime(task.due, '%Y-%m-%d').date(), time=str(datetime.now()).split('.')[0])
+        except AttributeError:
+            flash('Task with provided ID does not exists')
+            return redirect(url_for('index'))
     # checking if form was validated and if redirecting to index else add_task    
     return redirect(url_for('index'))\
         if validate_task(form, task=task) else\
@@ -131,10 +156,13 @@ def add_task(task_id=None):
 @app.route('/delete-id/<int:task_id>')
 @login_required
 def delete_task(task_id=None):
+    try:
         task = db.session.execute(db.select(Tasks).where(Tasks.id == task_id)).scalar()
         db.session.delete(task)
         db.session.commit()
-        return redirect(url_for('index'))
+    except UnmappedInstanceError:
+        flash('Task with provided ID does not exists')
+    return redirect(url_for('index'))
 
 
 @app.route('/done-change')
@@ -151,14 +179,19 @@ def index(task_id=None):
     
     # changeing status done from 0 to 1 or from 1 to 0
     if task_id:
-        task = db.session.execute(db.select(Tasks).where(Tasks.id == task_id)).scalar()
-        task.done = False if task.done else True
-        db.session.commit()
-        # without redirection simple refreching will act as clicking same task again and again
+        try:
+            task = db.session.execute(db.select(Tasks).where(Tasks.id == task_id)).scalar()
+            task.done = False if task.done else True
+            db.session.commit()
+        except AttributeError:
+            flash('Task with provided ID does not exists')
+
+        # redirecting so we don't have to write all the parameters
         return redirect(url_for('index'))
     
     # getting tasks
     tasks = db.session.execute(db.select(Tasks).where(and_(Tasks.owner == current_user.get_id(), Tasks.done == session.get('done', False)))).scalars().all()
+    
     # cleaning post from html code
     sanitized_tasks = []
     for task in tasks:
@@ -235,9 +268,14 @@ def login():
     # blocks logged users from logging again
     form = LoginForm()
     if form.validate_on_submit():
-        user = db.session.execute(db.select(User).filter_by(email=form.email.data)).scalar()
-        if not user.confirmed:
-            flash('Confirm email before logging')
+        try:
+            user = db.session.execute(db.select(User).filter_by(email=form.email.data)).scalar()
+            if not user.confirmed:
+                flash('Confirm email before logging')
+                send_reg_email(user.email)
+        except AttributeError:
+            pass
+        else:
             return render_template('login.html', form=form)
         try:
             if check_password_hash(user.password, form.password.data):

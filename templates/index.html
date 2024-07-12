@@ -57,7 +57,11 @@ List - ToDO
         Unfinished Tasks</a>
         <br><br><p class="lead">Here are your finished tasks!<br>Just click to mark it uncompleted or delete it!</p>
         {%endif%}
-    
+        {% with messages = get_flashed_messages() %}
+                        {% for message in messages %}
+                        <p style="color: yellow;">{{ message }}</p>
+                        {% endfor %}
+                        {% endwith %}
     </div>
 </header>
 <section>
