@@ -273,10 +273,9 @@ def login():
             if not user.confirmed:
                 flash('Confirm email before logging')
                 send_reg_email(user.email)
+                return render_template('login.html', form=form)
         except AttributeError:
             pass
-        else:
-            return render_template('login.html', form=form)
         try:
             if check_password_hash(user.password, form.password.data):
                 login_user(user, remember=form.remember.data)
