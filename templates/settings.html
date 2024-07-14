@@ -16,30 +16,34 @@ Settings - ToDO
 <section>
     <div class="container px-4">
         <div class="row gx-4 justify-content-center">
-        <form method='POST' action="{{url_for("settings")}}" novalidate>
-            {{form.hidden_tag()}}
-            <div class="col-lg-8">
-                {{m.render_form(form.task1)}}
-            </div>
-            <div class="col-lg-8">
-                {{m.render_form(form.task2)}}
-            </div>
-            <div class="col-lg-8">
-                {{m.render_form(form.task3)}}
-            </div>
-            <div class="col-lg-8">
-                <br><br>
-                {{form.submit(class='btn btn-primary')}}
-            </div>
-            <div class="col-lg-8">
-        </form>
-        <form method='POST' action="{{url_for("settings")}}" novalidate>
-            <br>
-            {{reset.submit(class='btn btn-secondary')}}
-        </form>
+            <form method='POST' action="{{url_for("settings")}}" novalidate class="col-lg-8">
+                {{form.hidden_tag()}}
+                <div class="row">
+                    <div class="col">
+                        {{m.render_form(form.task1)}}
+                    </div>
+                    <div class="col d-flex align-items-start justify-content-end">
+                        <a href='{{url_for("change_password")}}' class='btn btn-primary'>Change Password</a>
+                    </div>
+                </div>
+                <div>
+                    {{m.render_form(form.task2)}}
+                </div>
+                <div>
+                    {{m.render_form(form.task3)}}
+                </div>
+                <div class="mt-4">
+                    {{form.submit(class='btn btn-primary')}}
+                </div>
+            </form>
+            <form method='POST' action="{{url_for("settings")}}" novalidate class="col-lg-8 mt-4">
+                {{reset.submit(class='btn btn-secondary')}}
+            </form>
         </div>
     </div>
 </section>
+
+
 {%endblock%}
 
 {%import 'macros.jinja' as m%}

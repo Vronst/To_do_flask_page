@@ -37,6 +37,22 @@ class SettingsForm(FlaskForm):
     task3 = ColorField(label='Color for importance 3:')
     submit = SubmitField('Apply')
     
+
+class ResetPassword(FlaskForm):
+    email = EmailField(label='Email: ', validators=[DataRequired(), Email("Invalid email address")])
+    submit = SubmitField('Send')
+    
+
+class PasswordChange(FlaskForm):
+    old_password = PasswordField(label='Old password: ', validators=\
+        [])
+    password = PasswordField(label='New Password: ', validators=[\
+        DataRequired(), Length(min=8, message="Password must be at least 8 letters long")])
+    repeat_pass = PasswordField(label='Repeat password: ', validators=\
+        [DataRequired(), EqualTo('password', message='Passwords must match!')])
+    submit = SubmitField('Change')
+
+    
     
 class ResetForm(FlaskForm):
     submit = SubmitField('Reset to defaults')

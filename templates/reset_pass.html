@@ -1,0 +1,27 @@
+{%extends "base.html"%}
+{%block title%}
+Change password - ToDO
+{%endblock%}
+{%block body%}
+<section>
+    <div class="container px-4">
+        <div class="row gx-4 justify-content-center">
+            <div class="col-lg-8 text-center">
+                <form method='POST' action="{{url_for("reset_pass")}}" novalidate>
+                    {{ form.hidden_tag() }}
+                    <div>
+                        {{m.render_form(form.email)}}
+                    </div>
+                        <br>
+                        <div>
+                            
+                            {{form.submit(class='btn btn-primary')}}
+                        </div>
+                    </form>
+            </div>
+        </div>
+    </div>
+</section>
+{%endblock%}
+
+{%import 'macros.jinja' as m%}

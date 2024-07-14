@@ -1,6 +1,7 @@
 import os
 import smtplib
 from datetime import datetime
+from time import time
 
 import bleach
 from dotenv import load_dotenv
@@ -12,13 +13,14 @@ from flask_login import (
     UserMixin, login_user, LoginManager, current_user, login_required, logout_user
 )
 from flask_sqlalchemy import SQLAlchemy
-from itsdangerous import URLSafeTimedSerializer
+from itsdangerous import SignatureExpired, URLSafeTimedSerializer
 from sqlalchemy import and_
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm.exc import UnmappedInstanceError
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from forms import RegisterForm, LoginForm, ToDoForm, SettingsForm, ResetForm
+from forms import (RegisterForm, LoginForm, ToDoForm, SettingsForm, ResetForm,
+                   ResetPassword, PasswordChange)
 
 # globals with colors for tasks with different importance
 task1 = '#adff2f'
@@ -63,8 +65,8 @@ def handle_method_not_allowed(e):
     # Redirect to index route if user tries to access forbidden sites
     return redirect(url_for('index'))
 
+# below are routes that the user can take and benith them are databases
 
-# below are routes that user can take
 @app.route('/logout')
 @login_required
 def log_out():
@@ -177,7 +179,7 @@ def done_change():
 def index(task_id=None):
     tasks = []
     
-    # changeing status done from 0 to 1 or from 1 to 0
+    # changing status done from 0 to 1 or from 1 to 0
     if task_id:
         try:
             task = db.session.execute(db.select(Tasks).where(Tasks.id == task_id)).scalar()
@@ -192,7 +194,7 @@ def index(task_id=None):
     # getting tasks
     tasks = db.session.execute(db.select(Tasks).where(and_(Tasks.owner == current_user.get_id(), Tasks.done == session.get('done', False)))).scalars().all()
     
-    # cleaning post from html code
+    # cleaning post from HTML code
     sanitized_tasks = []
     for task in tasks:
         task_dict = task.__dict__  # Convert task object to dictionary if it's a SQLAlchemy object
@@ -212,10 +214,10 @@ def generate_conf_token(email: str):
     return SER.dumps(email, salt=SALT)
 
 
-def genereate_url_confirm(email: str):
+def genereate_url_confirm(email: str, url: str = 'confirm'):
     token = generate_conf_token(email=email)
     # should use external so users can acces it from email
-    return url_for('confirm', token=token, _external=True)
+    return url_for(url, token=token, _external=True)
 
 
 def send_reg_email(email):
@@ -230,6 +232,68 @@ def send_reg_email(email):
             f'Click this link to activate your account:\n\n{link}\n\n'
             f'If you did not make any account on our website please ignore this message'            
         )
+        
+
+def reset_pass_email(email):
+    link = genereate_url_confirm(email, url='change_password')
+    try:
+        if session['send-reset-to-'+email] - time() < 3600:
+            flash('Too early to send another email. Try again soon')
+            return redirect(url_for('login'))
+    except KeyError:
+        pass
+    
+    session['send-reset-to-'+email] = time()
+    with smtplib.SMTP('smtp.gmail.com') as connection:
+        connection.starttls()
+        connection.login(EMAIL, PASSWORD)
+        connection.sendmail(
+            from_addr=EMAIL,
+            to_addrs=email,
+            msg=f"Subject: ToDO - Password reset\n\n"
+            f'Click this link to reset your password:\n\n{link}\n\n'
+            f'If you did not started this procedure please ignore this message'            
+        )
+    flash('Email was send if account exists') 
+    return redirect(url_for('login'))
+        
+
+@app.route('/reset-password', methods=['POST', 'GET'])
+def reset_pass():
+    form = ResetPassword()
+    if form.validate_on_submit():
+        return reset_pass_email(form.email.data)
+    return render_template('reset_pass.html', form=form)    
+
+
+@app.route('/change-password/<token>', methods=['POST', 'GET'])
+@app.route('/change-password', methods=['POST', 'GET'])
+def change_password(token=None):
+    try:
+        # max_age is checking if token is not older than 1h
+        email = SER.loads(token, salt=SALT, max_age=3600) if token else current_user.email
+    except SignatureExpired:
+        flash('Link expired')
+        return redirect(url_for('login'))
+    form = PasswordChange()
+    try:
+        if form.validate_on_submit():
+            user = db.session.execute(db.select(User).where(User.email == email)).scalar()
+            if token or check_password_hash(user.password, form.old_password.data):
+                new_pass = generate_password_hash(form.password.data)
+                user.password = new_pass
+                db.session.commit()
+                flash('Password has been changed')
+                return redirect(url_for('login')) if token else redirect(url_for('settings'))
+            else:
+                flash('Old password is inccorect')
+    except AttributeError as e:
+        print(e)
+        flash('Something went wrong')
+    return render_template('change_pass.html', token=token, form=form)
+    
+        
+    
 
 
 @app.route('/confirm/<token>')
@@ -265,7 +329,7 @@ def register():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    # blocks logged users from logging again
+    # blocks logged-in users from logging again
     form = LoginForm()
     if form.validate_on_submit():
         try:
